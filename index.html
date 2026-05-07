@@ -69,6 +69,7 @@
     pointer-events: none;
     opacity: 0.55;
   }
+  @media (max-width: 600px) { #lightning-canvas { opacity: 0.35; } }
   .skills-inner {
     position: relative; z-index: 2;
     max-width: 1400px; margin: 0 auto;
@@ -1152,7 +1153,7 @@ window._setLoaderDone = function() { loaderDone = true; };
 
 <!-- HERO -->
 <section class="hero" id="home">
-  <div class="hero-bg-text" id="bgText">桜</div>
+  <canvas id="circuitCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.35;"></canvas>
 
   <div class="hero-inner">
     <div class="hero-left">
@@ -1409,12 +1410,174 @@ window._setLoaderDone = function() { loaderDone = true; };
 <script>
 
 
-/* ─── PARALLAX BG TEXT ─── */
-const bgText = document.getElementById('bgText');
-window.addEventListener('scroll', () => {
-  const y = window.scrollY;
-  bgText.style.transform = `translate(-50%, calc(-50% + ${y * 0.3}px)) scale(${1 + y * 0.0002})`;
-});
+/* ─── CIRCUIT PARTICLE FIELD ─── */
+(function() {
+  const canvas = document.getElementById('circuitCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const BLUE = '110,182,255';
+  const BLUE2 = '58,143,212';
+  let W, H, mouse = { x: -9999, y: -9999 };
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = canvas.width = rect.width;
+    H = canvas.height = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  canvas.parentElement.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+  });
+  canvas.parentElement.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+  const PARTICLE_COUNT = 25;
+  const particles = [];
+  function makeParticle() {
+    return {
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.18,
+      r: Math.random() * 1.8 + 0.8,
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.012 + Math.random() * 0.018,
+    };
+  }
+  for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(makeParticle());
+
+  const NODES = [];
+  const NODE_COLS = 7, NODE_ROWS = 5;
+  function rebuildNodes() {
+    NODES.length = 0;
+    for (let r2 = 0; r2 < NODE_ROWS; r2++) {
+      for (let c = 0; c < NODE_COLS; c++) {
+        const jx = (Math.random() - 0.5) * (W / NODE_COLS) * 0.55;
+        const jy = (Math.random() - 0.5) * (H / NODE_ROWS) * 0.55;
+        NODES.push({ x: (c + 0.5) / NODE_COLS * W + jx, y: (r2 + 0.5) / NODE_ROWS * H + jy });
+      }
+    }
+  }
+  rebuildNodes();
+  window.addEventListener('resize', rebuildNodes);
+
+  function buildEdges() {
+    const edges = [];
+    for (let i = 0; i < NODES.length; i++) {
+      const a = NODES[i];
+      const candidates = NODES
+        .map((b, j) => ({ j, dist: Math.hypot(b.x - a.x, b.y - a.y) }))
+        .filter(e => e.j !== i && e.dist < W * 0.28)
+        .sort((x, y2) => x.dist - y2.dist)
+        .slice(0, 2);
+      for (const { j } of candidates) {
+        if (!edges.find(e => (e.a === j && e.b === i))) edges.push({ a: i, b: j });
+      }
+    }
+    return edges;
+  }
+  let edges = buildEdges();
+  window.addEventListener('resize', () => { edges = buildEdges(); });
+
+  const MAX_PULSES = 6;
+  const pulses = [];
+  function spawnPulse() {
+    if (!edges.length || pulses.length >= MAX_PULSES) return;
+    const e = edges[Math.floor(Math.random() * edges.length)];
+    pulses.push({ edge: e, t: 0, speed: 0.004 + Math.random() * 0.006 });
+  }
+  setInterval(spawnPulse, 480);
+
+  function drawOrthogonal(ax, ay, bx, by, alpha) {
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, ay);
+    ctx.lineTo(bx, by);
+    ctx.strokeStyle = 'rgba(' + BLUE + ',' + alpha + ')';
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(bx, ay, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + BLUE + ',' + (alpha * 0.8) + ')';
+    ctx.fill();
+  }
+
+  let rafId, lastTs = 0;
+  function frame(ts) {
+    rafId = requestAnimationFrame(frame);
+    if (ts - lastTs < 32) return;
+    lastTs = ts;
+    ctx.clearRect(0, 0, W, H);
+
+    for (const e of edges) {
+      const a = NODES[e.a], b = NODES[e.b];
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      const dm = Math.hypot(mx - mouse.x, my - mouse.y);
+      const proximity = Math.max(0, 1 - dm / 280);
+      drawOrthogonal(a.x, a.y, b.x, b.y, 0.10 + proximity * 0.22);
+    }
+
+    for (const n of NODES) {
+      const dm = Math.hypot(n.x - mouse.x, n.y - mouse.y);
+      const proximity = Math.max(0, 1 - dm / 240);
+      const glowA = 0.25 + proximity * 0.6;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 2.5 + proximity * 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + BLUE + ',' + glowA + ')';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 1.2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + BLUE2 + ',' + (glowA * 0.7) + ')';
+      ctx.fill();
+    }
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const p = pulses[i];
+      p.t += p.speed;
+      if (p.t > 1) { pulses.splice(i, 1); continue; }
+      const a = NODES[p.edge.a], b = NODES[p.edge.b];
+      let px, py;
+      if (p.t < 0.5) { px = a.x + (b.x - a.x) * p.t * 2; py = a.y; }
+      else { px = b.x; py = a.y + (b.y - a.y) * (p.t - 0.5) * 2; }
+      const fade = Math.sin(p.t * Math.PI);
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + BLUE + ',' + (fade * 0.85) + ')';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px, py, 1.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,' + (fade * 0.6) + ')';
+      ctx.fill();
+    }
+
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      const dm = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+      const attract = Math.max(0, 1 - dm / 160);
+      if (attract > 0) {
+        const angle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
+        p.x += Math.cos(angle) * attract * 0.4;
+        p.y += Math.sin(angle) * attract * 0.4;
+      }
+      const a = 0.15 + Math.sin(p.pulse) * 0.08 + attract * 0.4;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r + attract * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + BLUE + ',' + a + ')';
+      ctx.fill();
+    }
+  }
+
+  const heroEl = document.getElementById('home');
+  const obs = new IntersectionObserver(en => {
+    if (en[0].isIntersecting) { if (!rafId) rafId = requestAnimationFrame(frame); }
+    else { cancelAnimationFrame(rafId); rafId = null; }
+  }, { threshold: 0.05 });
+  obs.observe(heroEl);
+  rafId = requestAnimationFrame(frame);
+})();
 
 /* ─── LIGHTNING DISCHARGE (WebGL) — section-scoped ─── */
 (function() {
@@ -1424,13 +1587,20 @@ window.addEventListener('scroll', () => {
   if (!gl) return;
 
   function resize() {
-    const r = section.getBoundingClientRect();
-    canvas.width  = Math.floor(r.width  * 0.75); // render at 75% res, CSS stretches it
-    canvas.height = Math.floor(r.height * 0.75);
+    const w = section.offsetWidth;
+    const h = section.offsetHeight;
+    const scale = window.innerWidth <= 600 ? 0.4 : 0.75;
+    canvas.width  = Math.max(1, Math.floor(w * scale));
+    canvas.height = Math.max(1, Math.floor(h * scale));
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
-  resize();
-  window.addEventListener('resize', resize);
+  /* ResizeObserver fires after layout — catches mobile reflow */
+  if (window.ResizeObserver) {
+    new ResizeObserver(resize).observe(section);
+  } else {
+    resize();
+    window.addEventListener('resize', resize);
+  }
 
   const vertSrc = `
     attribute vec2 aPos;
@@ -1440,7 +1610,7 @@ window.addEventListener('scroll', () => {
     precision mediump float;
     uniform vec2 iResolution;
     uniform float iTime;
-    #define OCTAVES 8
+    #define OCTAVES 5
 
     float hash12(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * .1031);
