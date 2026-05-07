@@ -56,10 +56,65 @@
 
   
 
-  /* ─── LIGHTNING CANVAS ─── */
+  /* ─── SKILLS SECTION ─── */
+  .skills-section {
+    position: relative; z-index: 2;
+    overflow: hidden;
+    background: #060810;
+    padding: 100px 48px 120px;
+  }
   #lightning-canvas {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: transparent;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .skills-inner {
+    position: relative; z-index: 2;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .skills-header {
+    margin-bottom: 60px;
+  }
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .skills-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .skills-grid { grid-template-columns: 1fr; } .skills-section { padding: 64px 20px 80px; } }
+  .skill-card {
+    border: 1px solid rgba(110,182,255,0.15);
+    border-radius: 10px;
+    padding: 28px 28px 24px;
+    background: rgba(6,10,20,0.72);
+    backdrop-filter: blur(6px);
+    transition: border-color 0.4s, background 0.4s;
+  }
+  .skill-card:hover {
+    border-color: rgba(110,182,255,0.45);
+    background: rgba(10,18,40,0.85);
+  }
+  .skill-card-glyph {
+    font-size: 28px; line-height: 1; margin-bottom: 14px; display: block;
+  }
+  .skill-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 400; color: var(--white);
+    margin-bottom: 8px;
+  }
+  .skill-card-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  }
+  .skill-tag {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--pink-light);
+    border: 1px solid rgba(110,182,255,0.22);
+    border-radius: 3px; padding: 3px 8px;
+  }
+  .skill-card-desc {
+    font-size: 13px; font-weight: 300; line-height: 1.65;
+    color: rgba(168,212,255,0.45);
   }
 
   /* ─── NAV ─── */
@@ -1080,7 +1135,6 @@ let loaderDone = false;
 window._setLoaderDone = function() { loaderDone = true; };
 </script>
 
-<canvas id="lightning-canvas"></canvas>
 
 <!-- NAV -->
 <nav>
@@ -1247,6 +1301,84 @@ window._setLoaderDone = function() { loaderDone = true; };
   </div>
 </section>
 
+<!-- SKILLS & STACK -->
+<section class="skills-section" id="skills">
+  <canvas id="lightning-canvas"></canvas>
+  <div class="skills-inner">
+    <div class="skills-header">
+      <div class="section-eyebrow">Technical Stack</div>
+      <h2 class="section-title">What I <em>build with</em></h2>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <span class="skill-card-glyph">⟡</span>
+        <div class="skill-card-title">HDL & FPGA</div>
+        <p class="skill-card-desc">RTL design, synthesis, and timing closure on Xilinx & Intel FPGAs. From state machines to full SoC integration.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">Verilog</span>
+          <span class="skill-tag">SystemVerilog</span>
+          <span class="skill-tag">Vivado</span>
+          <span class="skill-tag">Quartus</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-card-glyph">◈</span>
+        <div class="skill-card-title">Embedded Systems</div>
+        <p class="skill-card-desc">Bare-metal and RTOS firmware, peripheral interfacing, and real-time signal processing on resource-constrained hardware.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">ARM Cortex-M</span>
+          <span class="skill-tag">STM32</span>
+          <span class="skill-tag">ESP32</span>
+          <span class="skill-tag">FreeRTOS</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-card-glyph">✦</span>
+        <div class="skill-card-title">Signal Processing</div>
+        <p class="skill-card-desc">DSP pipelines for biomedical signals — ECG arrhythmia detection, filtering, and feature extraction in Python and C.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">DSP</span>
+          <span class="skill-tag">NumPy</span>
+          <span class="skill-tag">SciPy</span>
+          <span class="skill-tag">MATLAB</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-card-glyph">◇</span>
+        <div class="skill-card-title">VLSI & Device Physics</div>
+        <p class="skill-card-desc">MOSFET characterisation, TCAD simulation, and standard cell design. Understanding silicon from the physics up.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">TCAD</span>
+          <span class="skill-tag">Cadence</span>
+          <span class="skill-tag">SPICE</span>
+          <span class="skill-tag">Layout</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-card-glyph">⬡</span>
+        <div class="skill-card-title">Software & Scripting</div>
+        <p class="skill-card-desc">Automation, data pipelines, and network anomaly dashboards. Comfortable across the hardware–software boundary.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">C / C++</span>
+          <span class="skill-tag">Bash</span>
+          <span class="skill-tag">Git</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-card-glyph">❋</span>
+        <div class="skill-card-title">Communication & Leadership</div>
+        <p class="skill-card-desc">VP of Substantive Affairs at VITMUNSOC — leading research, debate training, and cross-functional strategy for 2,000+ members.</p>
+        <div class="skill-card-tags">
+          <span class="skill-tag">Public Speaking</span>
+          <span class="skill-tag">Research</span>
+          <span class="skill-tag">MUN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER / CONTACT -->
 <footer id="contact">
   <div class="footer-inner">
@@ -1284,15 +1416,17 @@ window.addEventListener('scroll', () => {
   bgText.style.transform = `translate(-50%, calc(-50% + ${y * 0.3}px)) scale(${1 + y * 0.0002})`;
 });
 
-/* ─── LIGHTNING DISCHARGE (WebGL) ─── */
+/* ─── LIGHTNING DISCHARGE (WebGL) — section-scoped ─── */
 (function() {
   const canvas = document.getElementById('lightning-canvas');
-  const gl = canvas.getContext('webgl', { antialias: true, alpha: true });
+  const section = document.getElementById('skills');
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: true });
   if (!gl) return;
 
   function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const r = section.getBoundingClientRect();
+    canvas.width  = Math.floor(r.width  * 0.75); // render at 75% res, CSS stretches it
+    canvas.height = Math.floor(r.height * 0.75);
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
   resize();
@@ -1302,12 +1436,11 @@ window.addEventListener('scroll', () => {
     attribute vec2 aPos;
     void main() { gl_Position = vec4(aPos, 0.0, 1.0); }
   `;
-
   const fragSrc = `
     precision mediump float;
     uniform vec2 iResolution;
     uniform float iTime;
-    #define OCTAVES 10
+    #define OCTAVES 8
 
     float hash12(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * .1031);
@@ -1338,22 +1471,15 @@ window.addEventListener('scroll', () => {
       vec2 uv = gl_FragCoord.xy / iResolution.xy;
       uv = 2.0*uv - 1.0;
       uv.x *= iResolution.x / iResolution.y;
-
       float t = iTime * 0.55;
-      /* two offset bolts for depth */
       vec2 uv1 = uv + vec2(-0.18, 0.0);
       vec2 uv2 = uv + vec2( 0.22, 0.0);
       uv1 += 2.0*fbm(uv1*0.85 + 0.8*t) - 1.0;
       uv2 += 2.0*fbm(uv2*0.75 + 0.8*t + 3.7) - 1.0;
-
       float flicker = mix(0.0, 0.06, hash11(t));
-
-      /* hue: ~210 – electric blue */
       vec3 col1 = hsv2rgb(vec3(0.585, 0.72, 0.85)) * (flicker / max(abs(uv1.x), 0.001)) * 0.9;
       vec3 col2 = hsv2rgb(vec3(0.600, 0.55, 0.65)) * (flicker / max(abs(uv2.x), 0.001)) * 0.55;
-      vec3 col = col1 + col2;
-      col = pow(max(col, vec3(0.0)), vec3(1.15));
-      /* keep it subtle – overall opacity cap */
+      vec3 col = pow(max(col1 + col2, vec3(0.0)), vec3(1.15));
       float alpha = min(length(col) * 0.8, 0.72);
       gl_FragColor = vec4(col, alpha);
     }
@@ -1370,7 +1496,6 @@ window.addEventListener('scroll', () => {
   gl.attachShader(prog, compileShader(fragSrc, gl.FRAGMENT_SHADER));
   gl.linkProgram(prog);
   gl.useProgram(prog);
-
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
@@ -1385,17 +1510,29 @@ window.addEventListener('scroll', () => {
   const uRes  = gl.getUniformLocation(prog, 'iResolution');
   const uTime = gl.getUniformLocation(prog, 'iTime');
   const t0 = performance.now();
-  let last = 0;
+  let last = 0, rafId = null, visible = false;
 
   function frame(ts) {
-    requestAnimationFrame(frame);
-    if (ts - last < 33) return; // ~30fps cap
+    rafId = requestAnimationFrame(frame);
+    if (!visible || ts - last < 33) return; // pause when off-screen, ~30fps cap
     last = ts;
     gl.uniform2f(uRes, canvas.width, canvas.height);
     gl.uniform1f(uTime, (performance.now() - t0) / 1000);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
-  requestAnimationFrame(frame);
+
+  // Only render while the section is in the viewport
+  const observer = new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+    if (visible && !rafId) rafId = requestAnimationFrame(frame);
+  }, { threshold: 0.05 });
+  observer.observe(section);
+
+  // Pause when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { cancelAnimationFrame(rafId); rafId = null; }
+    else if (visible) rafId = requestAnimationFrame(frame);
+  });
 })();
 </script>
 
