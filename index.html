@@ -1389,7 +1389,7 @@ window._setLoaderDone = function() { loaderDone = true; };
           <span>hemanyavats@gmail.com</span>
           <span class="social-arrow">→</span>
         </a>
-        <a class="social-link" href="https://www.linkedin.com/in/hemanya-saini" target="_blank">
+        <a class="social-link" href="https://www.linkedin.com/in/hemanya-saini-a83a38319/" target="_blank">
           <span>LinkedIn</span>
           <span class="social-arrow">→</span>
         </a>
@@ -1414,14 +1414,23 @@ window._setLoaderDone = function() { loaderDone = true; };
   function initLightning() {
   const canvas = document.getElementById('lightning-canvas');
   const section = document.getElementById('skills');
-  const gl = canvas.getContext('webgl', { antialias: false, alpha: true });
+  // Try both webgl and experimental-webgl for broader mobile support
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: true })
+          || canvas.getContext('experimental-webgl', { antialias: false, alpha: true });
   if (!gl) return;
 
   function resize() {
     const r = section.getBoundingClientRect();
-    canvas.width  = Math.floor(r.width  * 0.75); // render at 75% res, CSS stretches it
-    canvas.height = Math.floor(r.height * 0.75);
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    const w = Math.floor((r.width  || section.offsetWidth)  * 0.75);
+    const h = Math.floor((r.height || section.offsetHeight) * 0.75);
+    if (w < 1 || h < 1) return; // guard against zero dimensions on mobile
+    canvas.width  = w;
+    canvas.height = h;
+    gl.viewport(0, 0, w, h);
+  }
+  // Use ResizeObserver so the canvas updates when the section's size is known
+  if (window.ResizeObserver) {
+    new ResizeObserver(resize).observe(section);
   }
   resize();
   window.addEventListener('resize', resize);
@@ -1509,7 +1518,9 @@ window._setLoaderDone = function() { loaderDone = true; };
   function frame(ts) {
     rafId = requestAnimationFrame(frame);
     if (!visible || ts - last < 33) return; // pause when off-screen, ~30fps cap
+    if (canvas.width < 1 || canvas.height < 1) { resize(); return; } // retry if dims not ready yet
     last = ts;
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(uRes, canvas.width, canvas.height);
     gl.uniform1f(uTime, (performance.now() - t0) / 1000);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
