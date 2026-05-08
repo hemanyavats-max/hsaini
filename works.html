@@ -9,41 +9,47 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --pink:#e8799a;--pink-light:#f2b8ca;--pink-deep:#c45275;
-  --ink:#1a0a10;--muted:#9e7585;
+  --bg: #0a0c12;
+  --bg2: #0d1018;
+  --pink:#6eb6ff;--pink-light:#a8d4ff;--pink-deep:#3a8fd4;
+  --pink-pale:#0f1a2e;
+  --ink:#e8eeff;--ink2:#8ba8cc;--muted:#4a6280;
+  --white:#f0f4ff;
+  --glass:rgba(10,18,32,0.65);
+  --glass-border:rgba(110,182,255,0.15);
 }
 html{scroll-behavior:smooth}
-body{background:#0d0508;font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;color-scheme:dark}
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 48px}
-nav::before{content:'';position:absolute;inset:0;background:rgba(13,5,8,.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,121,154,.12)}
-.nav-logo{position:relative;z-index:1;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.15em;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:10px;text-decoration:none;}
+nav::before{content:'';position:absolute;inset:0;background:rgba(8,11,20,0.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border)}
+.nav-logo{position:relative;z-index:1;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.15em;color:var(--ink);display:flex;align-items:center;gap:10px;text-decoration:none;}
 .nav-pulse{width:7px;height:7px;border-radius:50%;background:var(--pink);animation:pulse-nav 2s cubic-bezier(.4,0,.6,1) infinite}
-@keyframes pulse-nav{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(232,121,154,.5)}50%{opacity:.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(232,121,154,0)}}
-.nav-back{position:relative;z-index:1;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);text-decoration:none;;transition:color .3s;display:flex;align-items:center;gap:8px}
+@keyframes pulse-nav{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(110,182,255,0.6)}50%{opacity:.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(110,182,255,0)}}
+.nav-back{position:relative;z-index:1;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);text-decoration:none;transition:color .3s;display:flex;align-items:center;gap:8px}
 .nav-back:hover{color:var(--pink-light)}
 
 /* AMBIENT */
 .ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
 .ab{position:absolute;border-radius:50%;filter:blur(130px);animation:drift 20s ease-in-out infinite alternate}
-.ab1{width:700px;height:700px;background:var(--pink);opacity:.07;top:-300px;left:-200px}
-.ab2{width:500px;height:500px;background:var(--pink-light);opacity:.04;bottom:-100px;right:5%;animation-delay:-9s}
+.ab1{width:700px;height:700px;background:var(--pink);opacity:.06;top:-300px;left:-200px}
+.ab2{width:500px;height:500px;background:var(--pink-light);opacity:.03;bottom:-100px;right:5%;animation-delay:-9s}
 @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,30px) scale(1.06)}}
 
 /* PAGE HEADER */
 .page-header{position:relative;z-index:10;padding:118px 56px 0;max-width:1400px;margin:0 auto;animation:fade-up .9s cubic-bezier(.22,1,.36,1) .1s both}
 .page-eyebrow{font-size:10px;font-weight:600;letter-spacing:.4em;text-transform:uppercase;color:var(--pink);margin-bottom:14px;display:flex;align-items:center;gap:12px}
 .page-eyebrow::before{content:'';display:inline-block;width:32px;height:1px;background:var(--pink);opacity:.5}
-.page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,7vw,96px);font-weight:300;line-height:.95;letter-spacing:-.03em;color:#fff;margin-bottom:18px}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,7vw,96px);font-weight:300;line-height:.95;letter-spacing:-.03em;color:var(--white);margin-bottom:18px}
 .page-title em{font-style:italic;color:var(--pink-light)}
-.page-sub{font-size:14px;font-weight:300;color:rgba(255,255,255,.32);letter-spacing:.04em;max-width:380px;line-height:1.75}
+.page-sub{font-size:14px;font-weight:300;color:var(--ink2);letter-spacing:.04em;max-width:380px;line-height:1.75}
 
 /* DRAG HINT */
 .drag-hint{position:relative;z-index:10;display:flex;align-items:center;gap:10px;padding:28px 56px 0;max-width:1400px;margin:0 auto;animation:fade-up .9s cubic-bezier(.22,1,.36,1) .35s both}
 .dh-line{width:40px;height:1px;background:linear-gradient(to right,var(--pink),transparent)}
-.dh-text{font-size:10px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.22)}
-.dh-arrow{font-size:14px;color:rgba(232,121,154,.4);animation:nudge 2s ease-in-out infinite}
+.dh-text{font-size:10px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.dh-arrow{font-size:14px;color:rgba(110,182,255,.4);animation:nudge 2s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
 
 /* GALLERY CANVAS WRAPPER */
@@ -53,20 +59,20 @@ nav::before{content:'';position:absolute;inset:0;background:rgba(13,5,8,.75);bac
 
 /* PROJECT STRIP */
 .project-strip{position:relative;z-index:10;max-width:1400px;margin:0 auto;padding:56px 56px 72px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;grid-auto-rows:auto;animation:fade-up .9s ease .65s both}
-.proj{padding:26px 24px 26px 0;border-top:1px solid rgba(232,121,154,.1);transition:border-color .4s;}
-.proj:hover{border-color:rgba(232,121,154,.42)}
-.proj-num{font-size:9px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:rgba(242,184,202,.28);margin-bottom:10px}
-.proj-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:#fff;line-height:1.2;margin-bottom:8px;transition:color .3s}
+.proj{padding:26px 24px 26px 0;border-top:1px solid rgba(110,182,255,.1);transition:border-color .4s;}
+.proj:hover{border-color:rgba(110,182,255,.42)}
+.proj-num{font-size:9px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:rgba(168,212,255,.28);margin-bottom:10px}
+.proj-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--white);line-height:1.2;margin-bottom:8px;transition:color .3s}
 .proj:hover .proj-name{color:var(--pink-light)}
 .proj-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-.ptag{font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--pink-light);border:1px solid rgba(242,184,202,.18);border-radius:3px;padding:2px 7px}
-.proj-desc{font-size:12px;font-weight:300;line-height:1.75;color:rgba(255,255,255,.28)}
+.ptag{font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--pink-light);border:1px solid rgba(110,182,255,.22);border-radius:3px;padding:2px 7px}
+.proj-desc{font-size:12px;font-weight:300;line-height:1.75;color:rgba(168,212,255,.45)}
 
 /* BOTTOM */
-.bottom-nav{border-top:1px solid rgba(232,121,154,.08);padding:30px 56px;display:flex;justify-content:space-between;align-items:center}
-.bn-left{font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.18)}
-.back-btn{display:inline-flex;align-items:center;gap:10px;background:transparent;border:1px solid rgba(232,121,154,.28);border-radius:100px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(242,184,202,.75);text-decoration:none;;transition:border-color .3s,color .3s,box-shadow .3s}
-.back-btn:hover{border-color:rgba(232,121,154,.65);color:#fff;box-shadow:0 0 18px rgba(232,121,154,.12)}
+.bottom-nav{border-top:1px solid rgba(110,182,255,.08);padding:30px 56px;display:flex;justify-content:space-between;align-items:center}
+.bn-left{font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.back-btn{display:inline-flex;align-items:center;gap:10px;background:transparent;border:1px solid rgba(110,182,255,.28);border-radius:100px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(168,212,255,.75);text-decoration:none;transition:border-color .3s,color .3s,box-shadow .3s}
+.back-btn:hover{border-color:rgba(110,182,255,.65);color:var(--white);box-shadow:0 0 18px rgba(110,182,255,.18)}
 
 @keyframes fade-up{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fade-in{from{opacity:0}to{opacity:1}}
@@ -166,7 +172,7 @@ nav::before{content:'';position:absolute;inset:0;background:rgba(13,5,8,.75);bac
     <div class="proj-desc">AI predictive maintenance system forecasting equipment failures and RUL estimation; achieved >90% anomaly detection accuracy — Yantra Central Hackathon '25.</div>
   </div>
   <div class="proj">
-    <div class="proj-num">06 · <span style="font-size:9px;letter-spacing:.15em;color:rgba(242,184,202,0.5);">1st Place ↗</span></div>
+    <div class="proj-num">06 · <span style="font-size:9px;letter-spacing:.15em;color:rgba(168,212,255,0.5);">1st Place ↗</span></div>
     <div class="proj-name">Biomimicry Oil Spill Cleanup</div>
     <div class="proj-tags"><span class="ptag">Biomimicry</span><span class="ptag">Hardware</span></div>
     <div class="proj-desc">Biomimicry-inspired oil-water separation system achieving >85% separation efficiency in prototype trials — 1st place at BIDFEST among 10+ competing teams.</div>
@@ -184,13 +190,24 @@ nav::before{content:'';position:absolute;inset:0;background:rgba(13,5,8,.75);bac
 
 // ── Card data ──────────────────────────────────────────────
 const CARDS = [
-  {label:'Wireless Gesture Car', sub:'IoT · Hardware',   glyph:'✦', c1:'#5a0a20',c2:'#2a050f'},
-  {label:'RailReserve System',   sub:'Full Stack',        glyph:'◈', c1:'#3a0818',c2:'#1a030a'},
-  {label:'Smart Sensor Net',     sub:'IoT · ML',          glyph:'◇', c1:'#480a30',c2:'#22041a'},
-  {label:'MUN Design',           sub:'Creative · Design', glyph:'⬡', c1:'#2d0614',c2:'#180308'},
-  {label:'VIT Campus News',      sub:'Web · Portal',      glyph:'✶', c1:'#3a1040',c2:'#180820'},
-  {label:'Spice Symphony',       sub:'Web · Design',      glyph:'◉', c1:'#501828',c2:'#220810'},
-  {label:'Beginner Blog',        sub:'HTML · CSS',        glyph:'◌', c1:'#1e1040',c2:'#0c0820'},
+  // ECG — deep wine/burgundy bg, warm rose-gold accent
+  {label:'ECG Arrhythmia Detection',    sub:'Embedded · DSP · ML',            glyph:'♥',
+   c1:'#2a0a18', c2:'#150409', accent:'#e8957a'},
+  // FPGA Morse — dark slate-indigo bg, warm amber accent
+  {label:'FPGA Morse Transceiver',      sub:'FPGA · Verilog · UART',          glyph:'◈',
+   c1:'#131828', c2:'#090d18', accent:'#d4a85a'},
+  // Network Traffic — dark petrol/slate bg, electric aqua accent
+  {label:'Network Traffic Analyser',    sub:'Python · Scapy · Dash',          glyph:'⬡',
+   c1:'#071e26', c2:'#030e14', accent:'#5ecfcf'},
+  // Vibration Control — deep charcoal-plum bg, soft lavender accent
+  {label:'Active Vibration Control',    sub:'Control Systems · DSP',          glyph:'≋',
+   c1:'#16112a', c2:'#0a0814', accent:'#a98eff'},
+  // Sentinel — dark forest bg, muted sage-green accent
+  {label:'Project Sentinel',            sub:'AI · Predictive Maintenance',    glyph:'◎',
+   c1:'#0a1a10', c2:'#040d07', accent:'#6dd68a'},
+  // Biomimicry — deep ocean teal bg, soft gold accent (1st place)
+  {label:'Biomimicry Oil Spill Cleanup',sub:'Biomimicry · Hardware',          glyph:'〜',
+   c1:'#041e1a', c2:'#020e0c', accent:'#c8a96e'},
 ];
 // triple for seamless looping
 const ITEMS = [...CARDS,...CARDS,...CARDS,...CARDS];
@@ -208,62 +225,74 @@ const PADDING_PX = 60;    // gap between cards in pixels
 function lerp(a,b,t){return a+(b-a)*t}
 
 // ── Build card textures on a 2D canvas ────────────────────
-function makeCardTexture(item){
+function hexToRgba(hex, a) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function makeCardTexture(item, idx){
   const W=CARD_W_PX, H=CARD_H_PX;
   const c=document.createElement('canvas');
   c.width=W; c.height=H;
   const ctx=c.getContext('2d');
 
-  // dark gradient bg
+  const accent = item.accent;
+
+  // bg gradient — rich coloured base
   const g=ctx.createLinearGradient(0,0,W,H);
   g.addColorStop(0,item.c1); g.addColorStop(1,item.c2);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 
+  // soft radial glow from top-right — lifts the card away from pure black
+  const glow = ctx.createRadialGradient(W*0.78, H*0.22, 0, W*0.78, H*0.22, W*0.65);
+  glow.addColorStop(0, hexToRgba(accent, 0.13));
+  glow.addColorStop(1, hexToRgba(accent, 0.00));
+  ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
   // subtle grid
-  ctx.strokeStyle='rgba(242,184,202,0.04)'; ctx.lineWidth=1;
+  ctx.strokeStyle=hexToRgba(accent, 0.09); ctx.lineWidth=1;
   for(let x=0;x<W;x+=55){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
   for(let y=0;y<H;y+=55){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
 
-  // large watermark glyph
+  // large watermark glyph — more visible
   ctx.save();
   ctx.font='300 220px "Cormorant Garamond",Georgia,serif';
-  ctx.fillStyle='rgba(242,184,202,0.07)';
+  ctx.fillStyle=hexToRgba(accent, 0.18);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(item.glyph, W*0.74, H*0.38);
   ctx.restore();
 
-  // pink horizontal rule
-  ctx.strokeStyle='rgba(232,121,154,0.32)'; ctx.lineWidth=1;
+  // horizontal rule
+  ctx.strokeStyle=hexToRgba(accent, 0.55); ctx.lineWidth=1;
   const ry=H*0.62;
   ctx.beginPath(); ctx.moveTo(52,ry); ctx.lineTo(W-52,ry); ctx.stroke();
 
-  // small category label above rule
+  // category label
   ctx.save();
-  ctx.font='600 17px "DM Sans",Arial,sans-serif';
-  ctx.fillStyle='rgba(242,184,202,0.42)';
+  ctx.font='600 16px "DM Sans",Arial,sans-serif';
+  ctx.fillStyle=hexToRgba(accent, 0.70);
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   ctx.fillText(item.sub.toUpperCase(), 52, ry-16);
   ctx.restore();
 
-  // project title below rule
+  // project title
   ctx.save();
-  ctx.font='300 58px "Cormorant Garamond",Georgia,serif';
-  ctx.fillStyle='rgba(255,255,255,0.92)';
+  ctx.font='300 54px "Cormorant Garamond",Georgia,serif';
+  ctx.fillStyle='rgba(235,240,255,0.94)';
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-  ctx.fillText(item.label, 52, ry+70);
+  ctx.fillText(item.label, 52, ry+66);
   ctx.restore();
 
-  // pink accent dot
+  // accent dot
   ctx.beginPath();
-  ctx.arc(52, ry+86, 3.5, 0, Math.PI*2);
-  ctx.fillStyle='rgba(232,121,154,0.65)'; ctx.fill();
+  ctx.arc(52, ry+84, 3.5, 0, Math.PI*2);
+  ctx.fillStyle=hexToRgba(accent, 0.90); ctx.fill();
 
-  // glowing border
+  // glowing border — accent top-left fading to dim bottom-right
   const bd=ctx.createLinearGradient(0,0,W,H);
-  bd.addColorStop(0,'rgba(232,121,154,0.30)');
-  bd.addColorStop(0.5,'rgba(242,184,202,0.06)');
-  bd.addColorStop(1,'rgba(232,121,154,0.24)');
-  ctx.strokeStyle=bd; ctx.lineWidth=2;
+  bd.addColorStop(0, hexToRgba(accent, 0.50));
+  bd.addColorStop(0.4, hexToRgba(accent, 0.18));
+  bd.addColorStop(1, hexToRgba(accent, 0.08));
+  ctx.strokeStyle=bd; ctx.lineWidth=1.5;
   ctx.strokeRect(1,1,W-2,H-2);
 
   return c;
@@ -358,8 +387,8 @@ const uBuf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,uBuf); gl.bufferData
 const iBuf=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuf); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,mesh.idx,gl.STATIC_DRAW);
 
 // ── Textures ───────────────────────────────────────────────
-const textures = ITEMS.map(item=>{
-  const cvs = makeCardTexture(item);
+const textures = ITEMS.map((item,i)=>{
+  const cvs = makeCardTexture(item, i % CARDS.length);
   const t = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D,t);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cvs);
