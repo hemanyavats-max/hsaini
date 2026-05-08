@@ -69,7 +69,6 @@
     pointer-events: none;
     opacity: 0.55;
   }
-  @media (max-width: 600px) { #lightning-canvas { opacity: 0.35; } }
   .skills-inner {
     position: relative; z-index: 2;
     max-width: 1400px; margin: 0 auto;
@@ -88,8 +87,7 @@
     border: 1px solid rgba(110,182,255,0.15);
     border-radius: 10px;
     padding: 28px 28px 24px;
-    background: rgba(6,10,20,0.72);
-    backdrop-filter: blur(6px);
+    background: rgba(6,10,20,0.85);
     transition: border-color 0.4s, background 0.4s;
   }
   .skill-card:hover {
@@ -190,6 +188,11 @@
     display: flex; align-items: center;
     overflow: hidden;
     perspective: 2000px;
+    background:
+      radial-gradient(ellipse 70% 80% at 20% 60%, #0e2444 0%, transparent 55%),
+      radial-gradient(ellipse 50% 60% at 75% 20%, #12183a 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 60% 85%, #060d22 0%, transparent 60%),
+      #07090f;
   }
 
   /* BIG BG TEXT */
@@ -205,7 +208,6 @@
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
-    will-change: transform;
     transition: transform 0.1s linear;
   }
 
@@ -278,7 +280,6 @@
     border: 1px solid rgba(110,182,255,0.55); border-radius: 4px;
     padding: 15px 32px; cursor: pointer;
     transition: border-color 0.3s, color 0.3s, transform 0.3s, background 0.3s, box-shadow 0.3s;
-    backdrop-filter: blur(8px);
   }
   .btn-outline:hover {
     border-color: var(--pink-light);
@@ -447,7 +448,6 @@
     border-radius: 10px;
     overflow: hidden; position: relative;
     cursor: auto;
-    backdrop-filter: blur(6px);
     transition: border-color 0.5s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1), background 0.4s;
   }
   .bento-card:hover {
@@ -903,6 +903,11 @@
       window.scrollTo(0, 0);
     }, 850);
   });
+  // Expose dismiss hook so the module script can cancel its RAF
+  window._dismissLoader = function() {
+    if (window._loaderRafCancel) window._loaderRafCancel();
+  };
+  document.getElementById('loaderEnter').addEventListener('click', window._dismissLoader, { once: true });
 })();
 </script>
 
@@ -1107,15 +1112,7 @@ loaderEl.addEventListener('pointermove', e => {
   targetPx.set((x - rect.width/2)/rect.width * 0.25, -(y - rect.height/2)/rect.height * 0.25);
 });
 loaderEl.addEventListener('pointerleave', () => { targetInf = 0; });
-// Also track on window in case cursor leaves canvas edge briefly
-window.addEventListener('pointermove', e => {
-  const rect = loaderEl.getBoundingClientRect();
-  const x = e.clientX - rect.left, y = e.clientY - rect.top;
-  const dpr = renderer.getPixelRatio();
-  targetMouse.set(x*dpr, (rect.height-y)*dpr);
-  targetInf = 1.0;
-  targetPx.set((x - rect.width/2)/rect.width * 0.25, -(y - rect.height/2)/rect.height * 0.25);
-});
+// NOTE: removed duplicate window pointermove — loader element listener is sufficient
 
 let loaderRaf;
 function loaderLoop() {
@@ -1130,6 +1127,13 @@ function loaderLoop() {
   loaderRaf = requestAnimationFrame(loaderLoop);
 }
 loaderLoop();
+
+// ─── Expose cancel hook so plain script can kill this loop on dismiss ───
+window._loaderRafCancel = function() {
+  cancelAnimationFrame(loaderRaf);
+  loaderRaf = null;
+  renderer.dispose();
+};
 
 // ─── loaderDone flag (shared with plain script via window) ───
 let loaderDone = false;
@@ -1153,8 +1157,6 @@ window._setLoaderDone = function() { loaderDone = true; };
 
 <!-- HERO -->
 <section class="hero" id="home">
-  <canvas id="circuitCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.35;"></canvas>
-
   <div class="hero-inner">
     <div class="hero-left">
       <div class="hero-tag">
@@ -1410,197 +1412,22 @@ window._setLoaderDone = function() { loaderDone = true; };
 <script>
 
 
-/* ─── CIRCUIT PARTICLE FIELD ─── */
+/* ── LIGHTNING DISCHARGE (WebGL) — section-scoped ─── */
 (function() {
-  const canvas = document.getElementById('circuitCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const BLUE = '110,182,255';
-  const BLUE2 = '58,143,212';
-  let W, H, mouse = { x: -9999, y: -9999 };
-
-  function resize() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    W = canvas.width = rect.width;
-    H = canvas.height = rect.height;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  canvas.parentElement.addEventListener('mousemove', e => {
-    const r = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - r.left;
-    mouse.y = e.clientY - r.top;
-  });
-  canvas.parentElement.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
-
-  const PARTICLE_COUNT = 25;
-  const particles = [];
-  function makeParticle() {
-    return {
-      x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.18,
-      r: Math.random() * 1.8 + 0.8,
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.012 + Math.random() * 0.018,
-    };
-  }
-  for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(makeParticle());
-
-  const NODES = [];
-  const NODE_COLS = 7, NODE_ROWS = 5;
-  function rebuildNodes() {
-    NODES.length = 0;
-    for (let r2 = 0; r2 < NODE_ROWS; r2++) {
-      for (let c = 0; c < NODE_COLS; c++) {
-        const jx = (Math.random() - 0.5) * (W / NODE_COLS) * 0.55;
-        const jy = (Math.random() - 0.5) * (H / NODE_ROWS) * 0.55;
-        NODES.push({ x: (c + 0.5) / NODE_COLS * W + jx, y: (r2 + 0.5) / NODE_ROWS * H + jy });
-      }
-    }
-  }
-  rebuildNodes();
-  window.addEventListener('resize', rebuildNodes);
-
-  function buildEdges() {
-    const edges = [];
-    for (let i = 0; i < NODES.length; i++) {
-      const a = NODES[i];
-      const candidates = NODES
-        .map((b, j) => ({ j, dist: Math.hypot(b.x - a.x, b.y - a.y) }))
-        .filter(e => e.j !== i && e.dist < W * 0.28)
-        .sort((x, y2) => x.dist - y2.dist)
-        .slice(0, 2);
-      for (const { j } of candidates) {
-        if (!edges.find(e => (e.a === j && e.b === i))) edges.push({ a: i, b: j });
-      }
-    }
-    return edges;
-  }
-  let edges = buildEdges();
-  window.addEventListener('resize', () => { edges = buildEdges(); });
-
-  const MAX_PULSES = 6;
-  const pulses = [];
-  function spawnPulse() {
-    if (!edges.length || pulses.length >= MAX_PULSES) return;
-    const e = edges[Math.floor(Math.random() * edges.length)];
-    pulses.push({ edge: e, t: 0, speed: 0.004 + Math.random() * 0.006 });
-  }
-  setInterval(spawnPulse, 480);
-
-  function drawOrthogonal(ax, ay, bx, by, alpha) {
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(bx, ay);
-    ctx.lineTo(bx, by);
-    ctx.strokeStyle = 'rgba(' + BLUE + ',' + alpha + ')';
-    ctx.lineWidth = 0.6;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(bx, ay, 1.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + BLUE + ',' + (alpha * 0.8) + ')';
-    ctx.fill();
-  }
-
-  let rafId, lastTs = 0;
-  function frame(ts) {
-    rafId = requestAnimationFrame(frame);
-    if (ts - lastTs < 32) return;
-    lastTs = ts;
-    ctx.clearRect(0, 0, W, H);
-
-    for (const e of edges) {
-      const a = NODES[e.a], b = NODES[e.b];
-      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      const dm = Math.hypot(mx - mouse.x, my - mouse.y);
-      const proximity = Math.max(0, 1 - dm / 280);
-      drawOrthogonal(a.x, a.y, b.x, b.y, 0.10 + proximity * 0.22);
-    }
-
-    for (const n of NODES) {
-      const dm = Math.hypot(n.x - mouse.x, n.y - mouse.y);
-      const proximity = Math.max(0, 1 - dm / 240);
-      const glowA = 0.25 + proximity * 0.6;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, 2.5 + proximity * 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + BLUE + ',' + glowA + ')';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, 1.2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + BLUE2 + ',' + (glowA * 0.7) + ')';
-      ctx.fill();
-    }
-
-    for (let i = pulses.length - 1; i >= 0; i--) {
-      const p = pulses[i];
-      p.t += p.speed;
-      if (p.t > 1) { pulses.splice(i, 1); continue; }
-      const a = NODES[p.edge.a], b = NODES[p.edge.b];
-      let px, py;
-      if (p.t < 0.5) { px = a.x + (b.x - a.x) * p.t * 2; py = a.y; }
-      else { px = b.x; py = a.y + (b.y - a.y) * (p.t - 0.5) * 2; }
-      const fade = Math.sin(p.t * Math.PI);
-      ctx.beginPath();
-      ctx.arc(px, py, 3, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + BLUE + ',' + (fade * 0.85) + ')';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px, py, 1.4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,' + (fade * 0.6) + ')';
-      ctx.fill();
-    }
-
-    for (const p of particles) {
-      p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-      const dm = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-      const attract = Math.max(0, 1 - dm / 160);
-      if (attract > 0) {
-        const angle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
-        p.x += Math.cos(angle) * attract * 0.4;
-        p.y += Math.sin(angle) * attract * 0.4;
-      }
-      const a = 0.15 + Math.sin(p.pulse) * 0.08 + attract * 0.4;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r + attract * 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + BLUE + ',' + a + ')';
-      ctx.fill();
-    }
-  }
-
-  const heroEl = document.getElementById('home');
-  const obs = new IntersectionObserver(en => {
-    if (en[0].isIntersecting) { if (!rafId) rafId = requestAnimationFrame(frame); }
-    else { cancelAnimationFrame(rafId); rafId = null; }
-  }, { threshold: 0.05 });
-  obs.observe(heroEl);
-  rafId = requestAnimationFrame(frame);
-})();
-
-/* ─── LIGHTNING DISCHARGE (WebGL) — section-scoped ─── */
-(function() {
+  function initLightning() {
   const canvas = document.getElementById('lightning-canvas');
   const section = document.getElementById('skills');
   const gl = canvas.getContext('webgl', { antialias: false, alpha: true });
   if (!gl) return;
 
   function resize() {
-    const w = section.offsetWidth;
-    const h = section.offsetHeight;
-    const scale = window.innerWidth <= 600 ? 0.4 : 0.75;
-    canvas.width  = Math.max(1, Math.floor(w * scale));
-    canvas.height = Math.max(1, Math.floor(h * scale));
+    const r = section.getBoundingClientRect();
+    canvas.width  = Math.floor(r.width  * 0.75); // render at 75% res, CSS stretches it
+    canvas.height = Math.floor(r.height * 0.75);
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
-  /* ResizeObserver fires after layout — catches mobile reflow */
-  if (window.ResizeObserver) {
-    new ResizeObserver(resize).observe(section);
-  } else {
-    resize();
-    window.addEventListener('resize', resize);
-  }
+  resize();
+  window.addEventListener('resize', resize);
 
   const vertSrc = `
     attribute vec2 aPos;
@@ -1610,7 +1437,7 @@ window._setLoaderDone = function() { loaderDone = true; };
     precision mediump float;
     uniform vec2 iResolution;
     uniform float iTime;
-    #define OCTAVES 5
+    #define OCTAVES 4
 
     float hash12(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * .1031);
@@ -1703,6 +1530,16 @@ window._setLoaderDone = function() { loaderDone = true; };
     if (document.hidden) { cancelAnimationFrame(rafId); rafId = null; }
     else if (visible) rafId = requestAnimationFrame(frame);
   });
+  } // end initLightning
+
+  // Defer until loader is gone
+  if (document.getElementById('loader')) {
+    document.getElementById('loaderEnter').addEventListener('click', function() {
+      setTimeout(initLightning, 900);
+    }, { once: true });
+  } else {
+    initLightning();
+  }
 })();
 </script>
 
